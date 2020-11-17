@@ -10,6 +10,11 @@ func TestNewEventBus(t *testing.T) {
 	if eb == nil {
 		t.Fail()
 	}
+
+	seb := GetBus()
+	if seb == nil {
+		t.Fail()
+	}
 }
 
 func TestEventBus_Subscribe(t *testing.T) {

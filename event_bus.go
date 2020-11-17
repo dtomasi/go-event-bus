@@ -46,6 +46,17 @@ func NewEventBus() *EventBus {
 	}
 }
 
+// Singleton Bus instance
+var defaultBus *EventBus
+
+// GetBus returns the default EventBus instance
+func GetBus() *EventBus {
+	if defaultBus == nil {
+		defaultBus = NewEventBus()
+	}
+	return defaultBus
+}
+
 // getSubscribingChannels returns all subscribing channels including wildcard matches
 func (eb *EventBus) getSubscribingChannels(topic string) eventChannelSlice {
 	subChannels := eventChannelSlice{}
