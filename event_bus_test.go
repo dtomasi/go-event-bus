@@ -43,7 +43,7 @@ func TestEventBus_PublishAsync(t *testing.T) {
 	wg.Add(2)
 
 	go func() {
-		evt :=<- ch1
+		evt := <-ch1
 		if evt.Topic != "foo:baz" {
 			t.Fail()
 		}
@@ -55,7 +55,7 @@ func TestEventBus_PublishAsync(t *testing.T) {
 	}()
 
 	go func() {
-		evt :=<- ch2
+		evt := <-ch2
 		if evt.Topic != "foo:baz" {
 			t.Fail()
 		}
@@ -81,7 +81,7 @@ func TestEventBus_Publish(t *testing.T) {
 	var callCount int
 
 	go func() {
-		evt :=<- ch1
+		evt := <-ch1
 		if evt.Topic != "foo:baz" {
 			t.Fail()
 		}
@@ -94,7 +94,7 @@ func TestEventBus_Publish(t *testing.T) {
 	}()
 
 	go func() {
-		evt :=<- ch2
+		evt := <-ch2
 		if evt.Topic != "foo:baz" {
 			t.Fail()
 		}
