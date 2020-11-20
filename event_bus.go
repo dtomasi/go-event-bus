@@ -1,7 +1,6 @@
 package eventbus
 
 import (
-	"github.com/minio/minio/pkg/wildcard"
 	"sync"
 )
 
@@ -61,7 +60,7 @@ func GetBus() *EventBus {
 func (eb *EventBus) getSubscribingChannels(topic string) eventChannelSlice {
 	subChannels := eventChannelSlice{}
 	for topicName := range eb.subscribers {
-		if topicName == topic || wildcard.MatchSimple(topicName, topic) {
+		if topicName == topic || matchWildcard(topicName, topic) {
 			subChannels = append(subChannels, eb.subscribers[topicName]...)
 		}
 	}
@@ -77,6 +76,36 @@ func (eb *EventBus) doPublish(channels eventChannelSlice, evt Event) {
 		}
 	}(channels, evt)
 	eb.rm.RUnlock()
+}
+
+// Code from https://github.com/minio/minio/blob/master/pkg/wildcard/match.go
+func matchWildcard(pattern, name string) bool {
+	if pattern == "" {
+		return name == pattern
+	}
+	if pattern == "*" {
+		return true
+	}
+	// Does only wildcard '*' match.
+	return deepMatchRune([]rune(name), []rune(pattern), true)
+}
+
+// Code from https://github.com/minio/minio/blob/master/pkg/wildcard/match.go
+func deepMatchRune(str, pattern []rune, simple bool) bool {
+	for len(pattern) > 0 {
+		switch pattern[0] {
+		default:
+			if len(str) == 0 || str[0] != pattern[0] {
+				return false
+			}
+		case '*':
+			return deepMatchRune(str, pattern[1:], simple) ||
+				(len(str) > 0 && deepMatchRune(str[1:], pattern, simple))
+		}
+		str = str[1:]
+		pattern = pattern[1:]
+	}
+	return len(str) == 0 && len(pattern) == 0
 }
 
 // PublishAsync data to a topic asynchronously
