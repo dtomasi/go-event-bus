@@ -60,14 +60,13 @@ func GetBus() *EventBus {
 // getSubscribingChannels returns all subscribing channels including wildcard matches
 func (eb *EventBus) getSubscribingChannels(topic string) eventChannelSlice {
 	subChannels := eventChannelSlice{}
-	for topicName, _ := range eb.subscribers {
+	for topicName := range eb.subscribers {
 		if topicName == topic || wildcard.MatchSimple(topicName, topic) {
 			subChannels = append(subChannels, eb.subscribers[topicName]...)
 		}
 	}
 	return subChannels
 }
-
 
 // doPublish is publishing events to channels internally
 func (eb *EventBus) doPublish(channels eventChannelSlice, evt Event) {
@@ -123,7 +122,7 @@ func (eb *EventBus) SubscribeCallback(topic string, callable CallbackFunc) {
 	ch := NewEventChannel()
 	eb.Subscribe(topic, ch)
 	go func(callable CallbackFunc) {
-		evt :=<-ch
+		evt := <-ch
 		callable(evt.Topic, evt.Data)
 		evt.Done()
 	}(callable)
