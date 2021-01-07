@@ -57,13 +57,13 @@ func main()  {
      
     // Create a new instance
     eb := eventbus.NewEventBus()
-
-    // Create a new EventChannel
-    eventChannel := eventbus.NewEventChannel()
-
+    
     // Subscribe to "foo:baz" - or use a wildcard like "foo:*"
-    eb.Subscribe("foo:baz", eventChannel)
+	eventChannel := eb.Subscribe("foo:baz")
 
+	// Subscribe with existing channel use
+	// eb.SubscribeChannel("foo:*", eventChannel)
+	
     // Wait for the incoming event on the channel
     go func() {
         evt :=<-eventChannel
@@ -93,11 +93,11 @@ func main()  {
     // Create a new instance
     eb := eventbus.NewEventBus()
 
-    // Create a new EventChannel
-    eventChannel := eventbus.NewEventChannel()
+	// Subscribe to "foo:baz" - or use a wildcard like "foo:*"
+	eventChannel := eb.Subscribe("foo:baz")
 
-    // Subscribe to "foo:baz" - or use a wildcard like "foo:*"
-    eb.Subscribe("foo:baz", eventChannel)
+	// Subscribe with existing channel use
+	// eb.SubscribeChannel("foo:*", eventChannel)
 
     // Wait for the incoming event on the channel
     go func() {
