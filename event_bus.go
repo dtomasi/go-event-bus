@@ -136,7 +136,14 @@ func (eb *EventBus) Publish(topic string, data interface{}) {
 }
 
 // Subscribe to a topic passing a EventChannel
-func (eb *EventBus) Subscribe(topic string, ch EventChannel) {
+func (eb *EventBus) Subscribe(topic string) EventChannel {
+	ch := make(EventChannel)
+	eb.SubscribeChannel(topic, ch)
+	return ch
+}
+
+// Subscribe with a given Channel
+func (eb *EventBus) SubscribeChannel(topic string, ch EventChannel) {
 	eb.rm.Lock()
 	if prev, found := eb.subscribers[topic]; found {
 		eb.subscribers[topic] = append(prev, ch)
@@ -149,7 +156,7 @@ func (eb *EventBus) Subscribe(topic string, ch EventChannel) {
 // SubscribeCallback provides a simple wrapper that allows to directly register CallbackFunc instead of channels
 func (eb *EventBus) SubscribeCallback(topic string, callable CallbackFunc) {
 	ch := NewEventChannel()
-	eb.Subscribe(topic, ch)
+	eb.SubscribeChannel(topic, ch)
 	go func(callable CallbackFunc) {
 		evt := <-ch
 		callable(evt.Topic, evt.Data)

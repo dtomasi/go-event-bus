@@ -19,8 +19,22 @@ func TestNewEventBus(t *testing.T) {
 
 func TestEventBus_Subscribe(t *testing.T) {
 	eb := NewEventBus()
+	_ = eb.Subscribe("foo")
+
+	sbs, ok := eb.subscribers["foo"]
+	if !ok {
+		t.Error("subscriber topic was not registered")
+	}
+
+	if len(sbs) != 1 {
+		t.Error("subscriber was registered correctly")
+	}
+}
+
+func TestEventBus_SubscribeChannel(t *testing.T) {
+	eb := NewEventBus()
 	ch := NewEventChannel()
-	eb.Subscribe("foo", ch)
+	eb.SubscribeChannel("foo", ch)
 
 	sbs, ok := eb.subscribers["foo"]
 	if !ok {
@@ -35,9 +49,8 @@ func TestEventBus_Subscribe(t *testing.T) {
 func TestEventBus_PublishAsync(t *testing.T) {
 	eb := NewEventBus()
 	ch1 := NewEventChannel()
-	ch2 := NewEventChannel()
-	eb.Subscribe("foo:baz", ch1)
-	eb.Subscribe("foo:*", ch2)
+	eb.SubscribeChannel("foo:baz", ch1)
+	ch2 := eb.Subscribe("foo:*")
 
 	var wg sync.WaitGroup
 	wg.Add(2)
@@ -74,9 +87,8 @@ func TestEventBus_PublishAsync(t *testing.T) {
 func TestEventBus_Publish(t *testing.T) {
 	eb := NewEventBus()
 	ch1 := NewEventChannel()
-	ch2 := NewEventChannel()
-	eb.Subscribe("foo:baz", ch1)
-	eb.Subscribe("foo:*", ch2)
+	eb.SubscribeChannel("foo:baz", ch1)
+	ch2 := eb.Subscribe("foo:*")
 
 	var callCount int
 
