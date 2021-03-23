@@ -1,6 +1,7 @@
 package eventbus
 
 import (
+	"github.com/dtomasi/helpers"
 	"sync"
 	"testing"
 )
@@ -90,8 +91,7 @@ func TestEventBus_Publish(t *testing.T) {
 	eb.SubscribeChannel("foo:baz", ch1)
 	ch2 := eb.Subscribe("foo:*")
 
-	var callCount int
-
+	callCounter := helpers.NewSafeCounter()
 	go func() {
 		evt := <-ch1
 		if evt.Topic != "foo:baz" {
@@ -101,7 +101,7 @@ func TestEventBus_Publish(t *testing.T) {
 		if evt.Data != "bar" {
 			t.Fail()
 		}
-		callCount++
+		callCounter.Inc()
 		evt.Done()
 	}()
 
@@ -114,13 +114,13 @@ func TestEventBus_Publish(t *testing.T) {
 		if evt.Data != "bar" {
 			t.Fail()
 		}
-		callCount++
+		callCounter.Inc()
 		evt.Done()
 	}()
 
 	eb.Publish("foo:baz", "bar")
 
-	if callCount != 2 {
+	if callCounter.Value() != 2 {
 		t.Fail()
 	}
 }
@@ -128,8 +128,7 @@ func TestEventBus_Publish(t *testing.T) {
 func TestEventBus_SubscribeCallback(t *testing.T) {
 	eb := NewEventBus()
 
-	var callCount int
-
+	callCounter := helpers.NewSafeCounter()
 	eb.SubscribeCallback("foo:baz", func(topic string, data interface{}) {
 		if topic != "foo:baz" {
 			t.Fail()
@@ -138,7 +137,7 @@ func TestEventBus_SubscribeCallback(t *testing.T) {
 		if data != "bar" {
 			t.Fail()
 		}
-		callCount++
+		callCounter.Inc()
 	})
 
 	eb.SubscribeCallback("foo:*", func(topic string, data interface{}) {
@@ -149,12 +148,12 @@ func TestEventBus_SubscribeCallback(t *testing.T) {
 		if data != "bar" {
 			t.Fail()
 		}
-		callCount++
+		callCounter.Inc()
 	})
 
 	eb.Publish("foo:baz", "bar")
 
-	if callCount != 2 {
+	if callCounter.Value() != 2 {
 		t.Fail()
 	}
 }

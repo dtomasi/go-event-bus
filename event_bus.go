@@ -34,8 +34,8 @@ type eventChannelSlice []EventChannel
 
 // EventBus stores the information about subscribers interested for a particular topic
 type EventBus struct {
+	mu          sync.RWMutex
 	subscribers map[string]eventChannelSlice
-	rm          sync.RWMutex
 }
 
 // NewEventBus returns a new EventBus instance
@@ -69,13 +69,13 @@ func (eb *EventBus) getSubscribingChannels(topic string) eventChannelSlice {
 
 // doPublish is publishing events to channels internally
 func (eb *EventBus) doPublish(channels eventChannelSlice, evt Event) {
-	eb.rm.RLock()
+	eb.mu.RLock()
+	defer eb.mu.RUnlock()
 	go func(channels eventChannelSlice, evt Event) {
 		for _, ch := range channels {
 			ch <- evt
 		}
 	}(channels, evt)
-	eb.rm.RUnlock()
 }
 
 // Code from https://github.com/minio/minio/blob/master/pkg/wildcard/match.go
@@ -144,13 +144,13 @@ func (eb *EventBus) Subscribe(topic string) EventChannel {
 
 // Subscribe with a given Channel
 func (eb *EventBus) SubscribeChannel(topic string, ch EventChannel) {
-	eb.rm.Lock()
+	eb.mu.RLock()
+	defer eb.mu.RUnlock()
 	if prev, found := eb.subscribers[topic]; found {
 		eb.subscribers[topic] = append(prev, ch)
 	} else {
 		eb.subscribers[topic] = append([]EventChannel{}, ch)
 	}
-	eb.rm.Unlock()
 }
 
 // SubscribeCallback provides a simple wrapper that allows to directly register CallbackFunc instead of channels
