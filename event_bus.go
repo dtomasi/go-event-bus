@@ -163,3 +163,8 @@ func (eb *EventBus) SubscribeCallback(topic string, callable CallbackFunc) {
 		evt.Done()
 	}(callable)
 }
+
+// Check if a topic has subscribers
+func (eb *EventBus) HasSubscribers(topic string) bool {
+	return len(eb.getSubscribingChannels(topic)) > 0
+}
