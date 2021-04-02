@@ -12,7 +12,7 @@ func TestNewEventBus(t *testing.T) {
 		t.Fail()
 	}
 
-	seb := GetBus()
+	seb := DefaultBus()
 	if seb == nil {
 		t.Fail()
 	}

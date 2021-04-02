@@ -48,8 +48,8 @@ func NewEventBus() *EventBus {
 // Singleton Bus instance
 var defaultBus *EventBus
 
-// GetBus returns the default EventBus instance
-func GetBus() *EventBus {
+// DefaultBus returns the default EventBus instance
+func DefaultBus() *EventBus {
 	if defaultBus == nil {
 		defaultBus = NewEventBus()
 	}
