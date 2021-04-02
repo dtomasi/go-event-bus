@@ -144,8 +144,8 @@ func (eb *EventBus) Subscribe(topic string) EventChannel {
 
 // Subscribe with a given Channel
 func (eb *EventBus) SubscribeChannel(topic string, ch EventChannel) {
-	eb.mu.RLock()
-	defer eb.mu.RUnlock()
+	eb.mu.Lock()
+	defer eb.mu.Unlock()
 	if prev, found := eb.subscribers[topic]; found {
 		eb.subscribers[topic] = append(prev, ch)
 	} else {
