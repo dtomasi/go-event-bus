@@ -11,12 +11,12 @@ This package provides a simple yet powerful event bus.
 
 ## Installation
 
-    go get github.com/dtomasi/go-event-bus
+    go get github.com/dtomasi/go-event-bus/v2
     
 ```go
 package main
 
-import "github.com/dtomasi/go-event-bus"
+import "github.com/dtomasi/go-event-bus/v2"
 ```
 
 ## Usage
@@ -27,7 +27,7 @@ Subscribe and Publish events using a simple callback function
 ```go
 package main
 
-import "github.com/dtomasi/go-event-bus"
+import "github.com/dtomasi/go-event-bus/v2"
 
 func main()  {
      
@@ -51,7 +51,7 @@ Subscribe using a EventChannel
 ```go
 package main
 
-import "github.com/dtomasi/go-event-bus"
+import "github.com/dtomasi/go-event-bus/v2"
 
 func main()  {
      
@@ -86,7 +86,7 @@ Publish asynchronously
 ```go
 package main
 
-import "github.com/dtomasi/go-event-bus"
+import "github.com/dtomasi/go-event-bus/v2"
 
 func main()  {
      

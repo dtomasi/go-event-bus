@@ -1,4 +1,4 @@
-module github.com/dtomasi/go-event-bus
+module github.com/dtomasi/go-event-bus/v2
 
 go 1.15
 
