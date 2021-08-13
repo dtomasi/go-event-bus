@@ -1,5 +1,11 @@
 # Go EventBus
 
+![Go Unit Tests](https://github.com/dtomasi/go-event-bus/actions/workflows/go.yml/badge.svg)
+![Golang CI Lint](https://github.com/dtomasi/go-event-bus/actions/workflows/golangci-lint.yml/badge.svg)
+![CodeQL](https://github.com/dtomasi/go-event-bus/actions/workflows/codeql-analysis.yml/badge.svg)
+
+[![CodeFactor](https://www.codefactor.io/repository/github/dtomasi/go-event-bus/badge)](https://www.codefactor.io/repository/github/dtomasi/go-event-bus)
+
 ## Introduction
 
 This package provides a simple yet powerful event bus.
