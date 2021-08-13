@@ -18,13 +18,13 @@ func (e *Event) Done() {
 	}
 }
 
-// Defines a CallbackFunc
+// CallbackFunc Defines a CallbackFunc
 type CallbackFunc func(topic string, data interface{})
 
 // EventChannel is a channel which can accept an Event
 type EventChannel chan Event
 
-// Creates a new EventChannel
+// NewEventChannel Creates a new EventChannel
 func NewEventChannel() EventChannel {
 	return make(EventChannel)
 }
@@ -142,7 +142,7 @@ func (eb *EventBus) Subscribe(topic string) EventChannel {
 	return ch
 }
 
-// Subscribe with a given Channel
+// SubscribeChannel subscribes to a given Channel
 func (eb *EventBus) SubscribeChannel(topic string, ch EventChannel) {
 	eb.mu.Lock()
 	defer eb.mu.Unlock()
@@ -164,7 +164,7 @@ func (eb *EventBus) SubscribeCallback(topic string, callable CallbackFunc) {
 	}(callable)
 }
 
-// Check if a topic has subscribers
+// HasSubscribers Check if a topic has subscribers
 func (eb *EventBus) HasSubscribers(topic string) bool {
 	return len(eb.getSubscribingChannels(topic)) > 0
 }
