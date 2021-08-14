@@ -14,6 +14,9 @@ This package provides a simple yet powerful event bus.
 - Async Publishing of events
 - Wildcard Support
 
+## Documentation
+
+https://pkg.go.dev/github.com/dtomasi/go-event-bus/v2
 
 ## Installation
 
