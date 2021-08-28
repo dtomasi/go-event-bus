@@ -1,5 +1,6 @@
 # Go EventBus
 
+[![Go Reference](https://pkg.go.dev/badge/github.com/dtomasi/go-event-bus.svg)](https://pkg.go.dev/github.com/dtomasi/go-event-bus)
 [![CodeFactor](https://www.codefactor.io/repository/github/dtomasi/go-event-bus/badge)](https://www.codefactor.io/repository/github/dtomasi/di)
 [![pre-commit.ci status](https://results.pre-commit.ci/badge/github/dtomasi/go-event-bus/main.svg)](https://results.pre-commit.ci/latest/github/dtomasi/go-event-bus/main)
 ![Go Unit Tests](https://github.com/dtomasi/go-event-bus/actions/workflows/build.yml/badge.svg)
