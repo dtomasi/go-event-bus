@@ -1,0 +1,22 @@
+linters-settings:
+  goimports:
+    simplify: true
+  govet:
+    check-shadowing: true
+
+linters:
+  presets:
+    - bugs
+    - unused
+    - error
+    - style
+  enable:
+    - gosec
+    - revive
+    - exportloopref
+  disable:
+    - interfacer
+    - golint
+    - scopelint
+    - tparallel
+    - paralleltest

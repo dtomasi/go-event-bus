@@ -1,0 +1,26 @@
+version: 2
+updates:
+# Maintain dependencies for GitHub Actions
+- package-ecosystem: "github-actions"
+  directory: "/"
+  schedule:
+    interval: "weekly"
+    day: "saturday"
+    time: "06:00"
+    timezone: "Europe/Berlin"
+  reviewers:
+    - "dtomasi"
+  open-pull-requests-limit: 99
+  commit-message:
+    prefix: "build: "
+- package-ecosystem: "gomod"
+  directory: "/"
+  schedule:
+    interval: weekly
+    day: "saturday"
+    time: "06:00"
+    timezone: "Europe/Berlin"
+  reviewers:
+    - "dtomasi"
+  commit-message:
+    prefix: "build: "

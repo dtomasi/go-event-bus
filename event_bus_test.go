@@ -1,72 +1,63 @@
-package eventbus
+package eventbus_test
 
 import (
+	eb "github.com/dtomasi/go-event-bus/v2"
 	"github.com/dtomasi/helpers"
 	"sync"
 	"testing"
 )
 
 func TestNewEventBus(t *testing.T) {
-	eb := NewEventBus()
-	if eb == nil {
+	if ebi := eb.NewEventBus(); ebi == nil {
 		t.Fail()
 	}
 
-	seb := DefaultBus()
-	if seb == nil {
+	if seb := eb.DefaultBus(); seb == nil {
 		t.Fail()
 	}
 }
 
 func TestEventBus_Subscribe(t *testing.T) {
-	eb := NewEventBus()
-	_ = eb.Subscribe("foo")
+	inst := eb.NewEventBus()
+	_ = inst.Subscribe("foo")
 
-	sbs, ok := eb.subscribers["foo"]
-	if !ok {
+	if !inst.HasSubscribers("foo") {
 		t.Error("subscriber topic was not registered")
-	}
-
-	if len(sbs) != 1 {
-		t.Error("subscriber was registered correctly")
 	}
 }
 
 func TestEventBus_SubscribeChannel(t *testing.T) {
-	eb := NewEventBus()
-	ch := NewEventChannel()
-	eb.SubscribeChannel("foo", ch)
+	inst := eb.NewEventBus()
+	ch := eb.NewEventChannel()
+	inst.SubscribeChannel("foo", ch)
 
-	sbs, ok := eb.subscribers["foo"]
-	if !ok {
+	if !inst.HasSubscribers("foo") {
 		t.Error("subscriber topic was not registered")
-	}
-
-	if len(sbs) != 1 {
-		t.Error("subscriber was registered correctly")
 	}
 }
 
 func TestEventBus_PublishAsync(t *testing.T) {
-	eb := NewEventBus()
-	ch1 := NewEventChannel()
-	eb.SubscribeChannel("foo:baz", ch1)
-	ch2 := eb.Subscribe("foo:*")
+	inst := eb.NewEventBus()
+	ch1 := eb.NewEventChannel()
+	inst.SubscribeChannel("foo:baz", ch1)
+	ch2 := inst.Subscribe("foo:*")
 
 	var wg sync.WaitGroup
+
 	wg.Add(2)
 
 	go func() {
 		evt := <-ch1
-		if evt.Topic != "foo:baz" {
+		if evt.Topic != "foo:baz" { // nolint:goconst
 			t.Fail()
 		}
 
-		if evt.Data != "bar" {
+		if evt.Data != "bar" { // nolint:goconst
 			t.Fail()
 		}
+
 		wg.Done()
-	}()
+	}() //nolint:wsl,nolintlint
 
 	go func() {
 		evt := <-ch2
@@ -77,21 +68,23 @@ func TestEventBus_PublishAsync(t *testing.T) {
 		if evt.Data != "bar" {
 			t.Fail()
 		}
-		wg.Done()
-	}()
 
-	eb.PublishAsync("foo:baz", "bar")
+		wg.Done()
+	}() //nolint:wsl,nolintlint
+
+	inst.PublishAsync("foo:baz", "bar")
 
 	wg.Wait()
 }
 
 func TestEventBus_Publish(t *testing.T) {
-	eb := NewEventBus()
-	ch1 := NewEventChannel()
-	eb.SubscribeChannel("foo:baz", ch1)
-	ch2 := eb.Subscribe("foo:*")
+	inst := eb.NewEventBus()
+	ch1 := eb.NewEventChannel()
+	inst.SubscribeChannel("foo:baz", ch1)
+	ch2 := inst.Subscribe("foo:*")
 
 	callCounter := helpers.NewSafeCounter()
+
 	go func() {
 		evt := <-ch1
 		if evt.Topic != "foo:baz" {
@@ -101,7 +94,9 @@ func TestEventBus_Publish(t *testing.T) {
 		if evt.Data != "bar" {
 			t.Fail()
 		}
+
 		callCounter.Inc()
+
 		evt.Done()
 	}()
 
@@ -114,11 +109,13 @@ func TestEventBus_Publish(t *testing.T) {
 		if evt.Data != "bar" {
 			t.Fail()
 		}
+
 		callCounter.Inc()
+
 		evt.Done()
 	}()
 
-	eb.Publish("foo:baz", "bar")
+	inst.Publish("foo:baz", "bar")
 
 	if callCounter.Value() != 2 {
 		t.Fail()
@@ -126,10 +123,11 @@ func TestEventBus_Publish(t *testing.T) {
 }
 
 func TestEventBus_SubscribeCallback(t *testing.T) {
-	eb := NewEventBus()
+	inst := eb.NewEventBus()
 
 	callCounter := helpers.NewSafeCounter()
-	eb.SubscribeCallback("foo:baz", func(topic string, data interface{}) {
+
+	inst.SubscribeCallback("foo:baz", func(topic string, data interface{}) {
 		if topic != "foo:baz" {
 			t.Fail()
 		}
@@ -140,7 +138,7 @@ func TestEventBus_SubscribeCallback(t *testing.T) {
 		callCounter.Inc()
 	})
 
-	eb.SubscribeCallback("foo:*", func(topic string, data interface{}) {
+	inst.SubscribeCallback("foo:*", func(topic string, data interface{}) {
 		if topic != "foo:baz" {
 			t.Fail()
 		}
@@ -151,7 +149,7 @@ func TestEventBus_SubscribeCallback(t *testing.T) {
 		callCounter.Inc()
 	})
 
-	eb.Publish("foo:baz", "bar")
+	inst.Publish("foo:baz", "bar")
 
 	if callCounter.Value() != 2 {
 		t.Fail()
