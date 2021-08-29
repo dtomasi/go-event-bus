@@ -5,6 +5,7 @@
 [![pre-commit.ci status](https://results.pre-commit.ci/badge/github/dtomasi/go-event-bus/main.svg)](https://results.pre-commit.ci/latest/github/dtomasi/go-event-bus/main)
 ![Go Unit Tests](https://github.com/dtomasi/go-event-bus/actions/workflows/build.yml/badge.svg)
 ![CodeQL](https://github.com/dtomasi/go-event-bus/actions/workflows/codeql-analysis.yml/badge.svg)
+[![codecov](https://codecov.io/gh/dtomasi/go-event-bus/branch/main/graph/badge.svg?token=R8W0VJM90K)](https://codecov.io/gh/dtomasi/go-event-bus)
 
 ## Introduction
 
