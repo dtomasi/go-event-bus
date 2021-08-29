@@ -47,8 +47,13 @@ jobs:
       - uses: actions/setup-go@v2
         with:
           go-version: '1.16.x'
+      - name: List
+        run: go list -mod=mod all
       - name: Run coverage
-        run: go test -race -coverprofile=coverage.txt -covermode=atomic
+        run: |
+          go get -u github.com/ory/go-acc
+          go mod vendor
+          $(go env GOPATH)/bin/go-acc ./...
       - name: Upload coverage to Codecov
         run: |
           curl -Os https://uploader.codecov.io/latest/linux/codecov
