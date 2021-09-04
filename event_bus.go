@@ -130,7 +130,7 @@ func (eb *EventBus) PublishAsync(topic string, data interface{}) {
 
 // Publish data to a topic and wait for all subscribers to finish
 // This function creates a waitGroup internally. All subscribers must call Done() function on Event.
-func (eb *EventBus) Publish(topic string, data interface{}) {
+func (eb *EventBus) Publish(topic string, data interface{}) interface{} {
 	wg := sync.WaitGroup{}
 	channels := eb.getSubscribingChannels(topic)
 	wg.Add(len(channels))
@@ -142,6 +142,8 @@ func (eb *EventBus) Publish(topic string, data interface{}) {
 			wg:    &wg,
 		})
 	wg.Wait()
+
+	return data
 }
 
 // Subscribe to a topic passing a EventChannel.
