@@ -36,25 +36,15 @@ type eventChannelSlice []EventChannel
 type EventBus struct {
 	mu          sync.RWMutex
 	subscribers map[string]eventChannelSlice
+	stats       *Stats
 }
 
 // NewEventBus returns a new EventBus instance.
 func NewEventBus() *EventBus {
 	return &EventBus{ //nolint:exhaustivestruct
 		subscribers: map[string]eventChannelSlice{},
+		stats:       newStats(),
 	}
-}
-
-// Singleton Bus instance.
-var defaultBus *EventBus //nolint:gochecknoglobals
-
-// DefaultBus returns the default EventBus instance.
-func DefaultBus() *EventBus {
-	if defaultBus == nil {
-		defaultBus = NewEventBus()
-	}
-
-	return defaultBus
 }
 
 // getSubscribingChannels returns all subscribing channels including wildcard matches.
@@ -126,6 +116,17 @@ func (eb *EventBus) PublishAsync(topic string, data interface{}) {
 			Topic: topic,
 			wg:    nil,
 		})
+
+	eb.stats.incPublishedCountByTopic(topic)
+}
+
+// PublishAsyncOnce same as PublishAsync but makes sure that topic is only published once.
+func (eb *EventBus) PublishAsyncOnce(topic string, data interface{}) {
+	if eb.stats.GetPublishedCountByTopic(topic) > 0 {
+		return
+	}
+
+	eb.PublishAsync(topic, data)
 }
 
 // Publish data to a topic and wait for all subscribers to finish
@@ -143,13 +144,26 @@ func (eb *EventBus) Publish(topic string, data interface{}) interface{} {
 		})
 	wg.Wait()
 
+	eb.stats.incPublishedCountByTopic(topic)
+
 	return data
+}
+
+// PublishOnce same as Publish but makes sure only published once on topic.
+func (eb *EventBus) PublishOnce(topic string, data interface{}) interface{} {
+	if eb.stats.GetPublishedCountByTopic(topic) > 0 {
+		return nil
+	}
+
+	return eb.Publish(topic, data)
 }
 
 // Subscribe to a topic passing a EventChannel.
 func (eb *EventBus) Subscribe(topic string) EventChannel {
 	ch := make(EventChannel)
 	eb.SubscribeChannel(topic, ch)
+
+	eb.stats.incSubscriberCountByTopic(topic)
 
 	return ch
 }
@@ -164,6 +178,8 @@ func (eb *EventBus) SubscribeChannel(topic string, ch EventChannel) {
 	} else {
 		eb.subscribers[topic] = append([]EventChannel{}, ch)
 	}
+
+	eb.stats.incSubscriberCountByTopic(topic)
 }
 
 // SubscribeCallback provides a simple wrapper that allows to directly register CallbackFunc instead of channels.
@@ -176,9 +192,16 @@ func (eb *EventBus) SubscribeCallback(topic string, callable CallbackFunc) {
 		callable(evt.Topic, evt.Data)
 		evt.Done()
 	}(callable)
+
+	eb.stats.incSubscriberCountByTopic(topic)
 }
 
 // HasSubscribers Check if a topic has subscribers.
 func (eb *EventBus) HasSubscribers(topic string) bool {
 	return len(eb.getSubscribingChannels(topic)) > 0
+}
+
+// Stats returns the stats map.
+func (eb *EventBus) Stats() *Stats {
+	return eb.stats
 }

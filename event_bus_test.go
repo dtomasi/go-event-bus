@@ -1,8 +1,8 @@
 package eventbus_test
 
 import (
-	eb "github.com/dtomasi/go-event-bus/v2"
-	"github.com/dtomasi/helpers"
+	eb "github.com/dtomasi/go-event-bus/v3"
+	"github.com/stretchr/testify/assert"
 	"sync"
 	"testing"
 )
@@ -11,36 +11,30 @@ func TestNewEventBus(t *testing.T) {
 	if ebi := eb.NewEventBus(); ebi == nil {
 		t.Fail()
 	}
-
-	if seb := eb.DefaultBus(); seb == nil {
-		t.Fail()
-	}
 }
 
 func TestEventBus_Subscribe(t *testing.T) {
-	inst := eb.NewEventBus()
-	_ = inst.Subscribe("foo")
+	ebi := eb.NewEventBus()
+	_ = ebi.Subscribe("foo")
 
-	if !inst.HasSubscribers("foo") {
-		t.Error("subscriber topic was not registered")
-	}
+	assert.True(t, ebi.HasSubscribers("foo"))
 }
 
 func TestEventBus_SubscribeChannel(t *testing.T) {
-	inst := eb.NewEventBus()
+	ebi := eb.NewEventBus()
 	ch := eb.NewEventChannel()
-	inst.SubscribeChannel("foo", ch)
+	ebi.SubscribeChannel("foo", ch)
 
-	if !inst.HasSubscribers("foo") {
-		t.Error("subscriber topic was not registered")
-	}
+	assert.True(t, ebi.HasSubscribers("foo"))
 }
 
 func TestEventBus_PublishAsync(t *testing.T) {
-	inst := eb.NewEventBus()
+	const testTopicName = "foo:bar"
+
+	ebi := eb.NewEventBus()
 	ch1 := eb.NewEventChannel()
-	inst.SubscribeChannel("foo:baz", ch1)
-	ch2 := inst.Subscribe("foo:*")
+	ebi.SubscribeChannel(testTopicName, ch1)
+	ch2 := ebi.Subscribe("foo:*")
 
 	var wg sync.WaitGroup
 
@@ -48,7 +42,7 @@ func TestEventBus_PublishAsync(t *testing.T) {
 
 	go func() {
 		evt := <-ch1
-		if evt.Topic != "foo:baz" { // nolint:goconst
+		if evt.Topic != testTopicName {
 			t.Fail()
 		}
 
@@ -61,7 +55,7 @@ func TestEventBus_PublishAsync(t *testing.T) {
 
 	go func() {
 		evt := <-ch2
-		if evt.Topic != "foo:baz" {
+		if evt.Topic != testTopicName {
 			t.Fail()
 		}
 
@@ -72,22 +66,26 @@ func TestEventBus_PublishAsync(t *testing.T) {
 		wg.Done()
 	}() //nolint:wsl,nolintlint
 
-	inst.PublishAsync("foo:baz", "bar")
+	ebi.PublishAsync(testTopicName, "bar")
 
 	wg.Wait()
+
+	assert.Equal(t, 1, ebi.Stats().GetPublishedCountByTopic(testTopicName))
 }
 
 func TestEventBus_Publish(t *testing.T) {
-	inst := eb.NewEventBus()
-	ch1 := eb.NewEventChannel()
-	inst.SubscribeChannel("foo:baz", ch1)
-	ch2 := inst.Subscribe("foo:*")
+	const testTopicName = "foo:bar"
 
-	callCounter := helpers.NewSafeCounter()
+	ebi := eb.NewEventBus()
+	ch1 := eb.NewEventChannel()
+	ebi.SubscribeChannel(testTopicName, ch1)
+	ch2 := ebi.Subscribe("foo:*")
+
+	callCounter := eb.NewSafeCounter()
 
 	go func() {
 		evt := <-ch1
-		if evt.Topic != "foo:baz" {
+		if evt.Topic != testTopicName {
 			t.Fail()
 		}
 
@@ -102,7 +100,7 @@ func TestEventBus_Publish(t *testing.T) {
 
 	go func() {
 		evt := <-ch2
-		if evt.Topic != "foo:baz" {
+		if evt.Topic != testTopicName {
 			t.Fail()
 		}
 
@@ -115,20 +113,30 @@ func TestEventBus_Publish(t *testing.T) {
 		evt.Done()
 	}()
 
-	inst.Publish("foo:baz", "bar")
+	ebi.Publish(testTopicName, "bar")
 
 	if callCounter.Value() != 2 {
 		t.Fail()
 	}
+
+	assert.Equal(t, 1, ebi.Stats().GetPublishedCountByTopic(testTopicName))
+
+	// Try to republish with publish once
+	ebi.PublishOnce(testTopicName, "bar")
+
+	// Count should be still 1
+	assert.Equal(t, 1, ebi.Stats().GetPublishedCountByTopic(testTopicName))
 }
 
 func TestEventBus_SubscribeCallback(t *testing.T) {
-	inst := eb.NewEventBus()
+	const testTopicName = "foo:bar"
 
-	callCounter := helpers.NewSafeCounter()
+	ebi := eb.NewEventBus()
 
-	inst.SubscribeCallback("foo:baz", func(topic string, data interface{}) {
-		if topic != "foo:baz" {
+	callCounter := eb.NewSafeCounter()
+
+	ebi.SubscribeCallback(testTopicName, func(topic string, data interface{}) {
+		if topic != testTopicName {
 			t.Fail()
 		}
 
@@ -138,8 +146,8 @@ func TestEventBus_SubscribeCallback(t *testing.T) {
 		callCounter.Inc()
 	})
 
-	inst.SubscribeCallback("foo:*", func(topic string, data interface{}) {
-		if topic != "foo:baz" {
+	ebi.SubscribeCallback("foo:*", func(topic string, data interface{}) {
+		if topic != testTopicName {
 			t.Fail()
 		}
 
@@ -149,9 +157,15 @@ func TestEventBus_SubscribeCallback(t *testing.T) {
 		callCounter.Inc()
 	})
 
-	inst.Publish("foo:baz", "bar")
+	ebi.Publish(testTopicName, "bar")
 
 	if callCounter.Value() != 2 {
 		t.Fail()
 	}
+
+	// Try to republish with publish once
+	ebi.PublishOnce(testTopicName, "bar")
+
+	// Count should be still 1
+	assert.Equal(t, 1, ebi.Stats().GetPublishedCountByTopic(testTopicName))
 }
