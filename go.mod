@@ -1,6 +1,6 @@
 module github.com/dtomasi/go-event-bus/v3
 
-go 1.17
+go 1.19
 
 require (
 	github.com/cheynewallace/tabby v1.1.1
